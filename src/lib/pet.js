@@ -50,10 +50,19 @@
       this.targetFrac = this.frac;
       this.held = false;
       this.heldWiggle = 0;
+
+      // press-and-hold "box" one-shot (sprite pets with a holdAnim)
+      this.boxing = false;
+      this.boxHeld = false;
+      this.boxAnim = null;
+      this.boxT0 = 0;
+      this.boxFrame = 0;
     }
 
     apply(state) {
-      this.animal = state.animal || 'cat';
+      const newAnimal = state.animal || 'cat';
+      if (newAnimal !== this.animal) this.boxing = false; // switching pet cancels the box
+      this.animal = newAnimal;
       this.name = state.name || 'Pixel';
       this.xp = state.xp || 0;
       this.size = state.size || 'medium';
@@ -104,8 +113,27 @@
     }
     beHappy(dur) { this.mood = 'happy'; this.moodTimer = dur; this.sleepiness = 0; if (this.state === 'sleep') this.wake(); }
 
+    // press-and-hold: hop into the box and play that animation in full
+    canBox() {
+      const S = global.PetSprites; const d = S && S.petDef(this.animal);
+      return !!(d && d.holdAnim && S.getSheet(d.holdAnim));
+    }
+    enterBox() {
+      const S = global.PetSprites; const d = S && S.petDef(this.animal);
+      if (!d || !d.holdAnim) return false;       // pet has no box animation
+      this.boxing = true; this.boxHeld = true; this.boxAnim = d.holdAnim;
+      this.boxT0 = performance.now() / 1000; this.boxFrame = 0;
+      this.state = 'box'; this.stepping = false; this.mood = 'idle';
+      this.vy = 0; this.y = 0; this.squash = 0;
+      this.spawn('!', 1);
+      return true;
+    }
+    // release: let the current play-through finish all frames, then pop out
+    exitBox() { this.boxHeld = false; }
+
     // notice a click somewhere on the page (cx = page fraction 0..1)
     noticePoke(frac) {
+      if (this.boxing) return;
       if (this.mood === 'sleep') { this.wake(); return; }
       this.facing = frac >= this.frac ? 1 : -1;
       this.hop(110);
@@ -164,6 +192,17 @@
       // behaviour
       if (this.held) {
         this.stepping = false;
+      } else if (this.boxing) {
+        this.stepping = false;
+        const S = global.PetSprites;
+        const m = S && S.sheetMeta(this.boxAnim);
+        const fps = m ? m.fps : 5, frames = m ? m.frames : 4;
+        const f = Math.floor((performance.now() / 1000 - this.boxT0) * fps);
+        this.boxFrame = Math.min(f, frames - 1);
+        // once the full sequence has played (all frames), exit when released
+        if (f >= frames - 1 && !this.boxHeld) {
+          this.boxing = false; this.state = 'idle'; this.idleTimer = rand(0.6, 1.6); this.spawnHearts(2);
+        }
       } else if (this.state === 'walk') {
         const dir = this.targetFrac > this.frac ? 1 : -1;
         this.facing = dir;
@@ -251,8 +290,13 @@
       let colors, drawBody;
       if (spriteDef) {
         colors = { glow: spriteDef.glow, ink: spriteDef.ink };
-        const eff = this.held ? 'held' : (this.mood === 'sleep' ? 'sleep' : this.state);
-        const fr = Sprites.frameFor(spriteDef, eff, now / 1000);
+        let fr;
+        if (this.boxing) {
+          fr = { sheet: Sprites.getSheet(this.boxAnim), index: this.boxFrame };
+        } else {
+          const eff = this.held ? 'held' : (this.mood === 'sleep' ? 'sleep' : this.state);
+          fr = Sprites.frameFor(spriteDef, eff, now / 1000);
+        }
         const size = Math.min(BUF_H * px - 6, Sprites.FRAME * px * SPRITE_ZOOM * growth.scale);
         drawBody = () => Sprites.drawInto(ctx, fr.sheet, fr.index, size, spriteDef.footInset);
         this._bodyTop = feetY - size * 0.82;

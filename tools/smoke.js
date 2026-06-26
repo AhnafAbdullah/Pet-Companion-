@@ -48,8 +48,10 @@ for (const animal of ['cat', 'dog', 'owl', 'kitten', 'vampire']) {
       if (i === 400) pet.grab();
       if (i === 420) pet.release();
       if (i === 600) { pet.xp = xpForLevel(Math.min(12, pet.level + 1)); } // force level-up -> celebrate
-      if (i === 800) pet.celebrate();
-      if (i === 1000) pet.sleep();
+      if (i === 700) pet.enterBox();   // press-and-hold box (no-op for non-box pets)
+      if (i === 780) pet.exitBox();    // release -> finish all frames then pop out
+      if (i === 900) pet.celebrate();
+      if (i === 1100) pet.sleep();
 
       if (!finite(pet.frac, pet.y, pet.vy, pet.gait, pet.squash, pet.blink)) {
         throw new Error(`non-finite state for ${animal} L${startLevel} at frame ${i}: ` +

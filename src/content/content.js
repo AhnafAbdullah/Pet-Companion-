@@ -70,27 +70,37 @@
 
   // ---- input ----------------------------------------------------------
   function wireInput() {
-    let downAt = 0, downX = 0, downY = 0, dragging = false, pid = null;
+    let downX = 0, downY = 0, dragging = false, pid = null, boxMode = false, holdTimer = null;
+    const HOLD_MS = 320; // press-and-hold longer than this triggers the box (if supported)
 
     hit.addEventListener('pointerdown', (e) => {
-      pid = e.pointerId; downAt = performance.now(); downX = e.clientX; downY = e.clientY; dragging = false;
+      pid = e.pointerId; downX = e.clientX; downY = e.clientY; dragging = false; boxMode = false;
       try { hit.setPointerCapture(pid); } catch (_) {}
+      clearTimeout(holdTimer);
+      holdTimer = setTimeout(() => {
+        if (pid === null || dragging) return;
+        if (pet.enterBox()) { boxMode = true; dismissBubble(); } // hold = hop into the box
+      }, HOLD_MS);
       e.preventDefault();
     });
     hit.addEventListener('pointermove', (e) => {
       if (pid === null) return;
-      if (!dragging && Math.hypot(e.clientX - downX, e.clientY - downY) > 6) {
+      if (!boxMode && !dragging && Math.hypot(e.clientX - downX, e.clientY - downY) > 6) {
+        clearTimeout(holdTimer);
         dragging = true; hit.classList.add('petc-grabbing'); pet.grab();
         dismissBubble();
       }
       if (dragging) { pet.frac = clamp(e.clientX / window.innerWidth, 0.02, 0.98); place(); }
     });
-    const end = (e) => {
+    const end = () => {
       if (pid === null) return;
+      clearTimeout(holdTimer);
       try { hit.releasePointerCapture(pid); } catch (_) {}
       pid = null; hit.classList.remove('petc-grabbing');
       if (dragging) { pet.release(); queueSavePos(true); }
-      else { pet.pat(); addXp(2, 60000); dismissBubble(); } // tap = pet
+      else if (boxMode) { pet.exitBox(); }          // let the box animation finish all frames
+      else { pet.pat(); addXp(2, 60000); dismissBubble(); } // quick tap = pet
+      boxMode = false;
     };
     hit.addEventListener('pointerup', end);
     hit.addEventListener('pointercancel', end);

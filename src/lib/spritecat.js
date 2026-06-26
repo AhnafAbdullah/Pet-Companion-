@@ -26,7 +26,8 @@
       label: 'Kitten',
       glow: [255, 205, 150], ink: [120, 80, 60],
       footInset: 4,            // empty rows below the paws in the frame, so it seats on the ground
-      anims: { idle: 'idle', walk: 'idle', sit: 'idle', cheer: 'idle', sleep: 'box', held: 'idle' },
+      holdAnim: 'box',         // press-and-hold plays this once, all frames, to completion
+      anims: { idle: 'idle', walk: 'idle', sit: 'idle', cheer: 'idle', sleep: 'box', held: 'idle', box: 'box' },
     },
     vampire: {
       label: 'Vampire',
@@ -58,6 +59,8 @@
   function isSpritePet(animal) { return Object.prototype.hasOwnProperty.call(PETS, animal); }
   function petDef(animal) { return PETS[animal] || null; }
   function list() { return Object.keys(PETS); }
+  function getSheet(name) { return loaded[name] || null; }
+  function sheetMeta(name) { const s = SHEETS[name]; return s ? { frames: s.frames, fps: s.fps } : null; }
 
   // current frame index for a pet state at time `t` (seconds)
   function frameFor(def, state, t) {
@@ -81,7 +84,7 @@
     return true;
   }
 
-  const Sprites = { FRAME, SHEETS, PETS, start, isSpritePet, petDef, list, frameFor, drawInto, loaded };
+  const Sprites = { FRAME, SHEETS, PETS, start, isSpritePet, petDef, list, getSheet, sheetMeta, frameFor, drawInto, loaded };
   global.PetSprites = Sprites;
   if (typeof module !== 'undefined' && module.exports) module.exports = Sprites;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

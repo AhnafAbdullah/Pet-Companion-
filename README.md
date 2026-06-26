@@ -21,6 +21,8 @@ larger, richer-coloured elder with a glowing aura — and a crown at the top.
   gets sleepy, blinks, and dozes off with little `z`'s.
 - **Reacts to you** — click anywhere and it perks up and hops toward the click;
   click the pet to **pet** it (hearts!), or **drag** it anywhere on screen.
+  **Press and hold** the Kitten and it hops into a box, playing that animation
+  through all its frames and curling up until you let go.
 - **Grows up** — earn XP by petting, feeding treats, and just browsing. Twelve
   levels from *Baby* → *Young* → *Adult* → *Elder* → *Mythic*, each visibly
   changing the pet's size, proportions, colours, aura, and sparkles.
