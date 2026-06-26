@@ -1,0 +1,66 @@
+/* Pet Companion — injected overlay. Kept namespaced so we never clash with the
+   host page. The pet canvas itself never eats pointer events; only the small
+   hit-area does, so pages stay fully usable. */
+
+#petc-canvas {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  pointer-events: none;
+  z-index: 2147483640;
+  will-change: transform;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+#petc-hit {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  pointer-events: auto;
+  cursor: grab;
+  z-index: 2147483641;
+  touch-action: none;
+}
+#petc-hit.petc-grabbing { cursor: grabbing; }
+#petc-hidden { display: none !important; }
+
+#petc-bubble {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  z-index: 2147483642;
+  max-width: 230px;
+  padding: 10px 12px;
+  font: 500 12.5px/1.45 ui-rounded, "Segoe UI", system-ui, -apple-system, sans-serif;
+  color: #43354f;
+  background: #fff8fb;
+  border: 2px solid #43354f;
+  border-radius: 12px;
+  box-shadow: 4px 4px 0 rgba(67, 53, 79, 0.18);
+  pointer-events: auto;
+  cursor: pointer;
+  transform: translate3d(0, 0, 0);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+#petc-bubble::after {
+  content: "";
+  position: absolute;
+  left: 26px;
+  bottom: -9px;
+  width: 12px;
+  height: 12px;
+  background: #fff8fb;
+  border-right: 2px solid #43354f;
+  border-bottom: 2px solid #43354f;
+  transform: rotate(45deg);
+}
+#petc-bubble b { color: #d6477a; }
+#petc-bubble.petc-fade { opacity: 0; transform: translate3d(0, 6px, 0); }

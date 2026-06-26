@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Pet Companion — runtime demo</title>
+<style>
+  body { margin: 0; font: 14px ui-rounded, system-ui, sans-serif; color: #43354f;
+         background: linear-gradient(180deg, #ffe9f2, #e7f0ff); min-height: 100vh; }
+  h1 { text-align: center; padding: 16px 0 0; font-size: 18px; }
+  .stage { display: flex; justify-content: center; gap: 24px; flex-wrap: wrap; padding: 20px; }
+  .cell { background: #fff8fb; border: 2px solid #43354f; border-radius: 14px;
+          box-shadow: 4px 4px 0 rgba(67,53,79,.18); padding: 8px; text-align: center; }
+  canvas { display: block; image-rendering: pixelated;
+           background: linear-gradient(180deg,#fbf3ff,#eef4ff); border-radius: 8px; }
+  .lbl { margin-top: 6px; font-weight: 700; color: #d6477a; }
+  .controls { text-align: center; padding-bottom: 24px; }
+  button { font: inherit; border: 2px solid #43354f; background:#fff; border-radius: 9px;
+           padding: 6px 12px; margin: 0 4px; cursor: pointer; box-shadow: 2px 2px 0 rgba(67,53,79,.18); }
+</style>
+</head>
+<body>
+  <h1>🐾 Pet Companion — runtime render test</h1>
+  <div class="stage" id="stage"></div>
+  <div class="controls">
+    <button onclick="all(p=>p.feed())">🍪 Feed all</button>
+    <button onclick="all(p=>p.pat())">💗 Pet all</button>
+    <button onclick="levelUp()">⬆ Level up</button>
+  </div>
+
+  <script src="../src/lib/raster.js"></script>
+  <script src="../src/lib/critters.js"></script>
+  <script src="../src/lib/pet.js"></script>
+  <script>
+    const specs = [
+      { animal: 'cat', level: 3 },
+      { animal: 'dog', level: 7 },
+      { animal: 'owl', level: 12 },
+    ];
+    const stage = document.getElementById('stage');
+    const pets = [];
+    const W = 200, H = 170;
+    function xpForLevel(l) { return Math.round(16 * Math.pow(l - 1, 1.65)); }
+
+    for (const sp of specs) {
+      const cell = document.createElement('div'); cell.className = 'cell';
+      const c = document.createElement('canvas');
+      const dpr = Math.max(1, devicePixelRatio || 1);
+      c.width = W * dpr; c.height = H * dpr; c.style.width = W + 'px'; c.style.height = H + 'px';
+      const ctx = c.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.imageSmoothingEnabled = false;
+      const lbl = document.createElement('div'); lbl.className = 'lbl';
+      cell.appendChild(c); cell.appendChild(lbl); stage.appendChild(cell);
+      const pet = new PetEngine.Pet({ animal: sp.animal, xp: xpForLevel(sp.level), size: 'medium', speed: 'normal' });
+      pet.px = 2.6;
+      c.addEventListener('click', () => pet.pat());
+      pets.push({ pet, ctx, lbl });
+    }
+    function all(fn) { pets.forEach(o => fn(o.pet)); }
+    function levelUp() { pets.forEach(o => { o.pet.xp = xpForLevel(Math.min(12, o.pet.level + 1)); }); }
+
+    let last = performance.now();
+    function loop(t) {
+      const dt = (t - last) / 1000; last = t;
+      for (const o of pets) {
+        o.pet.update(dt, 600);
+        o.pet.stepping = true; o.pet.gait += dt * 2.4;   // keep them strolling for the demo
+        o.pet.render(o.ctx, W, H, t);
+        o.lbl.textContent = `${o.pet.animal} · Lv ${o.pet.level} · ${PetCritters.stageLabel(o.pet.level)}`;
+      }
+      requestAnimationFrame(loop);
+    }
+    requestAnimationFrame(loop);
+    window.__ready = true;
+  </script>
+</body>
+</html>

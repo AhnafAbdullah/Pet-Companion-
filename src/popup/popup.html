@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="popup.css" />
+  <title>Pet Companion</title>
+</head>
+<body>
+  <div class="wrap">
+    <header class="hdr">
+      <div class="name-row">
+        <input id="name" class="name" maxlength="14" spellcheck="false" aria-label="Pet name" />
+        <button id="edit" class="icon-btn" title="Rename">✎</button>
+      </div>
+      <div class="stage"><span id="stage">Baby</span> · Lv <span id="level">1</span></div>
+    </header>
+
+    <section class="stage-view">
+      <canvas id="preview" width="280" height="180"></canvas>
+      <div class="xp">
+        <div class="xp-bar"><i id="xp-fill"></i></div>
+        <div class="xp-label"><span id="xp-text">0 / 0 XP</span></div>
+      </div>
+    </section>
+
+    <section class="chooser" id="chooser" aria-label="Choose your companion"></section>
+
+    <section class="actions">
+      <button id="feed" class="btn primary">🍪 Feed treat</button>
+      <button id="pet" class="btn">💗 Pet</button>
+      <button id="visible" class="btn toggle" aria-pressed="true">👁 Showing</button>
+    </section>
+
+    <section class="settings">
+      <div class="set-row">
+        <label>Size</label>
+        <div class="seg" id="size">
+          <button data-v="small">S</button><button data-v="medium">M</button><button data-v="large">L</button>
+        </div>
+      </div>
+      <div class="set-row">
+        <label>Pace</label>
+        <div class="seg" id="speed">
+          <button data-v="calm">Calm</button><button data-v="normal">Normal</button><button data-v="zoomies">Zoomies</button>
+        </div>
+      </div>
+    </section>
+
+    <footer class="ftr">
+      <span id="treats">🍪 0 treats</span>
+      <button id="reset" class="link">Start over</button>
+    </footer>
+  </div>
+
+  <script src="../lib/raster.js"></script>
+  <script src="../lib/critters.js"></script>
+  <script src="../lib/spritecat.js"></script>
+  <script src="../lib/storage.js"></script>
+  <script src="../lib/pet.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>
