@@ -51,17 +51,21 @@
       this.held = false;
       this.heldWiggle = 0;
 
-      // press-and-hold "box" one-shot (sprite pets with a holdAnim)
-      this.boxing = false;
-      this.boxHeld = false;
-      this.boxAnim = null;
-      this.boxT0 = 0;
-      this.boxFrame = 0;
+      // press-and-hold play (sprite pets with a `hold` config): the kitten plays
+      // its box once; Foxi loops its sleep while you keep holding.
+      this.holding = false;
+      this.holdHeld = false;
+      this.holdState = null;
+      this.holdMode = 'once';
+      this.holdT0 = 0;
+      this.holdFrame = 0;
+      // anchored one-shot animation start (hurt clip), so it plays from frame 0
+      this.hurtT0 = 0;
     }
 
     apply(state) {
       const newAnimal = state.animal || 'cat';
-      if (newAnimal !== this.animal) this.boxing = false; // switching pet cancels the box
+      if (newAnimal !== this.animal) this.holding = false; // switching pet cancels a hold
       this.animal = newAnimal;
       this.skin = state.skin || 'doux';   // colour variant, only used by multi-skin sprite pets
       this.name = state.name || 'Pixel';
@@ -122,35 +126,45 @@
     // double-click reaction: a quick flinch for pets that have a 'hurt' clip
     // (the Dino); anything else just gets petted so the gesture still feels alive.
     hurt() {
-      if (this.boxing) return 'box';
+      if (this.holding) return 'hold';
       if (!this.hasAnim('hurt')) return this.pat();
       if (this.mood === 'sleep') this.wake();
       this.state = 'hurt';
       this.mood = 'idle';
       this.stepping = false;
-      this.idleTimer = 0.5;          // ~one play-through of the 4-frame clip
+      // play the whole hurt/frightened clip once, from frame 0
+      const S = global.PetSprites; const d = S && S.petDef(this.animal);
+      const n = (S && d) ? S.frameCount(d, 'hurt', this.skin) : 4;
+      const fps = (S && d && S.clipFps(d, 'hurt', this.skin)) || 10;
+      this.hurtT0 = performance.now() / 1000;
+      this.idleTimer = Math.max(0.4, n / fps + 0.08);
       this.hop(70);                  // small recoil
       this.spawn('!', 1);
       return 'hurt';
     }
 
-    // press-and-hold: hop into the box and play that animation in full
+    // press-and-hold: play the pet's `hold` animation. `once` (kitten box) plays
+    // through all frames to completion; `loop` (Foxi sleep) loops until release.
     canBox() {
       const S = global.PetSprites; const d = S && S.petDef(this.animal);
-      return !!(d && d.holdAnim && S.getSheet(d.holdAnim));
+      if (!d || !d.hold) return false;
+      const fr = S.frameAt(d, d.hold.state, 0, this.skin);
+      return !!(fr && fr.sheet);
     }
     enterBox() {
       const S = global.PetSprites; const d = S && S.petDef(this.animal);
-      if (!d || !d.holdAnim) return false;       // pet has no box animation
-      this.boxing = true; this.boxHeld = true; this.boxAnim = d.holdAnim;
-      this.boxT0 = performance.now() / 1000; this.boxFrame = 0;
-      this.state = 'box'; this.stepping = false; this.mood = 'idle';
+      if (!d || !d.hold) return false;            // pet has no hold animation
+      this.holding = true; this.holdHeld = true;
+      this.holdState = d.hold.state; this.holdMode = d.hold.mode || 'once';
+      this.holdT0 = performance.now() / 1000; this.holdFrame = 0;
+      this.state = 'hold'; this.stepping = false; this.mood = 'idle';
       this.vy = 0; this.y = 0; this.squash = 0;
-      this.spawn('!', 1);
+      this.spawn(this.holdMode === 'loop' ? 'z' : '!', 1);
       return true;
     }
-    // release: let the current play-through finish all frames, then pop out
-    exitBox() { this.boxHeld = false; }
+    // release: `once` finishes its current play-through; `loop` pops out now.
+    exitBox() { this.holdHeld = false; }
+    endHold() { this.holding = false; this.state = 'idle'; this.idleTimer = rand(0.6, 1.6); this.spawnHearts(2); }
 
     // notice a click somewhere on the page (cx = page fraction 0..1)
     noticePoke(frac) {
@@ -213,16 +227,19 @@
       // behaviour
       if (this.held) {
         this.stepping = false;
-      } else if (this.boxing) {
+      } else if (this.holding) {
         this.stepping = false;
-        const S = global.PetSprites;
-        const m = S && S.sheetMeta(this.boxAnim);
-        const fps = m ? m.fps : 5, frames = m ? m.frames : 4;
-        const f = Math.floor((performance.now() / 1000 - this.boxT0) * fps);
-        this.boxFrame = Math.min(f, frames - 1);
-        // once the full sequence has played (all frames), exit when released
-        if (f >= frames - 1 && !this.boxHeld) {
-          this.boxing = false; this.state = 'idle'; this.idleTimer = rand(0.6, 1.6); this.spawnHearts(2);
+        const S = global.PetSprites; const d = S && S.petDef(this.animal);
+        const frames = (S && d) ? S.frameCount(d, this.holdState, this.skin) : 4;
+        const fps = ((S && d) ? S.clipFps(d, this.holdState, this.skin) : 0) || 5;
+        const f = Math.floor((performance.now() / 1000 - this.holdT0) * fps);
+        if (this.holdMode === 'loop') {
+          this.holdFrame = ((f % frames) + frames) % frames;
+          if (Math.random() < dt * 1.4) this.spawn('z', 1);   // sleepy z's
+          if (!this.holdHeld) this.endHold();                  // release pops out now
+        } else {                                               // 'once'
+          this.holdFrame = Math.min(f, frames - 1);
+          if (f >= frames - 1 && !this.holdHeld) this.endHold();
         }
       } else if (this.state === 'walk') {
         const dir = this.targetFrac > this.frac ? 1 : -1;
@@ -313,17 +330,21 @@
         const glow = spriteDef.skins ? Sprites.glowFor(this.animal, this.skin) : spriteDef.glow;
         colors = { glow, ink: spriteDef.ink };
         let fr;
-        if (this.boxing) {
-          const bm = Sprites.sheetMeta(this.boxAnim);
-          fr = { sheet: Sprites.getSheet(this.boxAnim), index: this.boxFrame, frame: (bm && bm.frame) || Sprites.FRAME };
+        if (this.holding) {                          // press-and-hold play (box / sleep loop)
+          fr = Sprites.frameAt(spriteDef, this.holdState, this.holdFrame, this.skin);
+        } else if (this.state === 'hurt') {          // double-click clip, anchored to play once from frame 0
+          const fps = Sprites.clipFps(spriteDef, 'hurt', this.skin) || 10;
+          const n = Sprites.frameCount(spriteDef, 'hurt', this.skin);
+          const local = Math.min(n - 1, Math.floor((now / 1000 - this.hurtT0) * fps)); // hold last frame
+          fr = Sprites.frameAt(spriteDef, 'hurt', local, this.skin);
         } else {
           const eff = this.held ? 'held' : (this.mood === 'sleep' ? 'sleep' : this.state);
           fr = Sprites.frameFor(spriteDef, eff, now / 1000, this.skin);
         }
         const zoom = spriteDef.zoom || SPRITE_ZOOM;
         const size = Math.min(BUF_H * px - 6, fr.frame * px * zoom * growth.scale);
-        drawBody = () => Sprites.drawInto(ctx, fr.sheet, fr.index, size, spriteDef.footInset, fr.frame);
-        this._bodyTop = feetY - size * 0.82;
+        drawBody = () => Sprites.drawInto(ctx, fr.sheet, fr.sx, fr.sy, size, spriteDef.footInset, fr.frame);
+        this._bodyTop = feetY - size * (spriteDef.crownFrac || 0.82);
       } else {
         const buf = this.buf;
         const meta = this.draw(buf);

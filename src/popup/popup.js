@@ -12,7 +12,7 @@
   const Raster = window.PetRaster;
   const Sprites = window.PetSprites;
 
-  const LABELS = { cat: 'Inka', owl: 'Owl', kitten: 'Biscuit', vampire: 'Vampire Biscuit', dino: 'Dino' };
+  const LABELS = { cat: 'Inka', owl: 'Owl', kitten: 'Biscuit', vampire: 'Vampire Biscuit', dino: 'Dino', fox: 'Foxi' };
   const ALL_ANIMALS = [...Critters.ANIMALS, ...(Sprites ? Sprites.list() : [])];
   const pendingThumbs = [];   // sprite thumbs waiting for their image to load
 
@@ -99,7 +99,7 @@
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     const s = Math.min(canvas.width / F, canvas.height / F);
     const dw = F * s, dh = F * s;
-    ctx.drawImage(fr.sheet.img, fr.index * F, 0, F, F, (canvas.width - dw) / 2, canvas.height - dh, dw, dh);
+    ctx.drawImage(fr.sheet.img, fr.sx, fr.sy, F, F, (canvas.width - dw) / 2, canvas.height - dh, dw, dh);
     return true;
   }
 

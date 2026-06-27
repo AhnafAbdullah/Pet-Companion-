@@ -10,7 +10,7 @@
   const MAX_LEVEL = 12;
 
   const DEFAULTS = {
-    animal: 'cat',        // 'cat' | 'owl' | 'kitten' | 'vampire' | 'dino'
+    animal: 'cat',        // 'cat' | 'owl' | 'kitten' | 'vampire' | 'dino' | 'fox'
     skin: 'doux',         // colour variant for multi-skin pets (the Dino)
     name: 'Pixel',
     xp: 0,

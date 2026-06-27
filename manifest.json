@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Pet Companion",
   "version": "1.0.0",
-  "description": "A cute pixel-art pet — cat, owl or dino — that walks across your pages, reacts to clicks, and grows as you play.",
+  "description": "A cute pixel-art pet — cat, owl, dino or fox — that walks across your pages, reacts to clicks, and grows as you play.",
   "icons": {
     "16": "icons/icon16.png",
     "48": "icons/icon48.png",
@@ -39,7 +39,7 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["src/assets/cat/*.png", "src/assets/dino/*.png"],
+      "resources": ["src/assets/cat/*.png", "src/assets/dino/*.png", "src/assets/fox/*.png"],
       "matches": ["<all_urls>"]
     }
   ]

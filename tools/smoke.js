@@ -35,7 +35,7 @@ const finite = (...vs) => vs.every((v) => Number.isFinite(v));
 const SKINS = { dino: ['doux', 'mort', 'tard', 'vita'] };
 
 let frames = 0, checks = 0;
-for (const animal of ['cat', 'owl', 'kitten', 'vampire', 'dino']) {
+for (const animal of ['cat', 'owl', 'kitten', 'vampire', 'dino', 'fox']) {
  for (const skin of (SKINS[animal] || [undefined])) {
   for (const startLevel of [1, 5, 12]) {
     const pet = new Pet({ animal, skin, xp: xpForLevel(startLevel), size: 'medium', speed: 'normal' });
