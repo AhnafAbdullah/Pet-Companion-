@@ -1,8 +1,8 @@
 # 🐾 Pet Companion
 
-A tiny pixel-art pet — **Inka** (cat) or **owl** — that lives at the bottom of
-your browser, walks across the page, reacts when you click, lets you carry it
-around, and **grows** the more you play with it.
+A tiny pixel-art pet — **Inka** (cat), **owl**, or **Dino** — that lives at the
+bottom of your browser, walks across the page, reacts when you click, lets you
+carry it around, and **grows** the more you play with it.
 
 Everything is drawn procedurally in code (no sprite-sheet assets), so the art
 stays crisp at any size and the animals literally re-pixel themselves as they
@@ -13,10 +13,13 @@ larger, richer-coloured elder with a glowing aura — and a crown at the top.
 
 ## Features
 
-- **Four companions** — two drawn procedurally (**Inka** the cat, owl) plus two
-  pixel-sprite cats (**Biscuit** and **Vampire Biscuit**) animated from real
-  sprite sheets. Each has its own quirks (Inka's tail curl, owl wing-tuck;
-  Biscuit tail-swishes and curls up in a **box** when it sleeps).
+- **Five companions** — two drawn procedurally (**Inka** the cat, owl) plus three
+  pixel-sprite friends (**Biscuit**, **Vampire Biscuit**, and the **Dino**)
+  animated from real sprite sheets. Each has its own quirks (Inka's tail curl,
+  owl wing-tuck; Biscuit tail-swishes and curls up in a **box** when it sleeps).
+- **Dino colour skins** — the Dino comes in four colours (**Blue**, **Red**,
+  **Yellow**, **Green**); pick one from the colour row in the popup and it swaps
+  live on every open tab.
 - **Lives on the page** — strolls along the bottom, pauses to sit, looks around,
   gets sleepy, blinks, and dozes off with little `z`'s.
 - **Reacts to you** — click anywhere and it perks up and hops toward the click;
@@ -62,10 +65,11 @@ and syncs instantly when you change something in the popup.
 manifest.json              MV3 manifest
 src/lib/raster.js          indexed-palette pixel buffer + drawing primitives
 src/lib/critters.js        procedural cat (Inka) / owl art + growth model
-src/lib/spritecat.js       sprite-sheet companions (Biscuit / Vampire Biscuit) + loader
+src/lib/spritecat.js       sprite-sheet companions (Biscuit / Vampire Biscuit / Dino skins) + loader
 src/lib/storage.js         saved state + XP↔level curve (shared everywhere)
 src/lib/pet.js             behaviour state-machine, physics, particles, renderer
-src/assets/cat/            sprite sheets (Idle / drculacat / Box3, 32x32 strips)
+src/assets/cat/            cat sprite sheets (Idle / drculacat / Box3, 32x32 strips)
+src/assets/dino/           dino colour strips (doux / mort / tard / vita, 24-frame 24x24)
 src/content/content.js     injects & hosts the pet on every page
 src/content/content.css    overlay styling (canvas + hit-area + speech bubble)
 src/popup/                 control panel (HTML/CSS/JS)
@@ -90,7 +94,8 @@ the preview is a faithful render of what walks your pages.
 ## Credits
 
 The Biscuit and Vampire Biscuit companions use sprites from the **CatPackFree**
-asset pack (`src/assets/cat/`). Inka (cat) and the owl are original procedural art.
+asset pack (`src/assets/cat/`). The Dino uses **Arks' "DinoSprites"** pack
+(`src/assets/dino/`). Inka (cat) and the owl are original procedural art.
 
 ## Roadmap ideas
 

@@ -72,6 +72,24 @@
   function wireInput() {
     let downX = 0, downY = 0, dragging = false, pid = null, boxMode = false, holdTimer = null;
     const HOLD_MS = 320; // press-and-hold longer than this triggers the box (if supported)
+    const DBL_MS = 280;  // two taps within this window = double-click (flinch)
+
+    // single tap = pet; double tap = hurt/flinch. We only defer the pet (to wait
+    // for a possible second tap) on pets that actually have a flinch, so petting
+    // the cat/owl stays instant.
+    let tapTimer = null, lastTapAt = 0;
+    function onTap() {
+      dismissBubble();
+      if (!(pet.hasAnim && pet.hasAnim('hurt'))) { pet.pat(); addXp(2, 60000); return; }
+      const now = performance.now();
+      if (tapTimer && now - lastTapAt < DBL_MS) {  // second tap -> double-click
+        clearTimeout(tapTimer); tapTimer = null; lastTapAt = 0;
+        pet.hurt();
+        return;
+      }
+      lastTapAt = now;
+      tapTimer = setTimeout(() => { tapTimer = null; pet.pat(); addXp(2, 60000); }, DBL_MS);
+    }
 
     hit.addEventListener('pointerdown', (e) => {
       pid = e.pointerId; downX = e.clientX; downY = e.clientY; dragging = false; boxMode = false;
@@ -99,7 +117,7 @@
       pid = null; hit.classList.remove('petc-grabbing');
       if (dragging) { pet.release(); queueSavePos(true); }
       else if (boxMode) { pet.exitBox(); }          // let the box animation finish all frames
-      else { pet.pat(); addXp(2, 60000); dismissBubble(); } // quick tap = pet
+      else { onTap(); }                             // single tap = pet, double tap = flinch
       boxMode = false;
     };
     hit.addEventListener('pointerup', end);

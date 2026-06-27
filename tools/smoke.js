@@ -31,10 +31,14 @@ global.PetSprites.start((p) => p); // Image() unavailable in node -> sheets stay
 const xpForLevel = (l) => Math.round(16 * Math.pow(l - 1, 1.65));
 const finite = (...vs) => vs.every((v) => Number.isFinite(v));
 
+// the dino is the only multi-skin pet; run it through every colour, others once
+const SKINS = { dino: ['doux', 'mort', 'tard', 'vita'] };
+
 let frames = 0, checks = 0;
-for (const animal of ['cat', 'owl', 'kitten', 'vampire']) {
+for (const animal of ['cat', 'owl', 'kitten', 'vampire', 'dino']) {
+ for (const skin of (SKINS[animal] || [undefined])) {
   for (const startLevel of [1, 5, 12]) {
-    const pet = new Pet({ animal, xp: xpForLevel(startLevel), size: 'medium', speed: 'normal' });
+    const pet = new Pet({ animal, skin, xp: xpForLevel(startLevel), size: 'medium', speed: 'normal' });
     const ctx = makeCtx();
     // scripted interactions sprinkled across a long run
     for (let i = 0; i < 1500; i++) {
@@ -50,6 +54,7 @@ for (const animal of ['cat', 'owl', 'kitten', 'vampire']) {
       if (i === 600) { pet.xp = xpForLevel(Math.min(12, pet.level + 1)); } // force level-up -> celebrate
       if (i === 700) pet.enterBox();   // press-and-hold box (no-op for non-box pets)
       if (i === 780) pet.exitBox();    // release -> finish all frames then pop out
+      if (i === 850) pet.hurt();       // double-click flinch (real anim for dino, pat otherwise)
       if (i === 900) pet.celebrate();
       if (i === 1100) pet.sleep();
 
@@ -62,5 +67,6 @@ for (const animal of ['cat', 'owl', 'kitten', 'vampire']) {
       checks++;
     }
   }
+ }
 }
 console.log(`OK — ${frames} frames rendered, ${checks} state assertions passed, no exceptions.`);

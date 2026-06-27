@@ -12,7 +12,7 @@
   const Raster = window.PetRaster;
   const Sprites = window.PetSprites;
 
-  const LABELS = { cat: 'Inka', owl: 'Owl', kitten: 'Biscuit', vampire: 'Vampire Biscuit' };
+  const LABELS = { cat: 'Inka', owl: 'Owl', kitten: 'Biscuit', vampire: 'Vampire Biscuit', dino: 'Dino' };
   const ALL_ANIMALS = [...Critters.ANIMALS, ...(Sprites ? Sprites.list() : [])];
   const pendingThumbs = [];   // sprite thumbs waiting for their image to load
 
@@ -32,6 +32,7 @@
     pctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     pctx.imageSmoothingEnabled = false;
     c.addEventListener('click', () => { preview && preview.pat(); });
+    c.addEventListener('dblclick', () => { preview && preview.hurt(); });
     requestAnimationFrame(loop);
   }
   function loop(t) {
@@ -88,16 +89,42 @@
   function paintSpriteThumb(canvas, animal) {
     const def = Sprites && Sprites.petDef(animal);
     if (!def) return true;
-    const fr = Sprites.frameFor(def, 'idle', 0);
+    // multi-skin pets show their currently-selected colour in the chooser tile
+    const skin = (state && state.animal === animal) ? state.skin : (def.defaultSkin || null);
+    const fr = Sprites.frameFor(def, 'idle', 0, skin);
     if (!fr.sheet || !fr.sheet.ready || !fr.sheet.img) return false;
-    const F = Sprites.FRAME;
+    const F = fr.frame;
     const ctx = canvas.getContext('2d');
     ctx.imageSmoothingEnabled = false;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     const s = Math.min(canvas.width / F, canvas.height / F);
     const dw = F * s, dh = F * s;
-    ctx.drawImage(fr.sheet.img, 0, 0, F, F, (canvas.width - dw) / 2, canvas.height - dh, dw, dh);
+    ctx.drawImage(fr.sheet.img, fr.index * F, 0, F, F, (canvas.width - dw) / 2, canvas.height - dh, dw, dh);
     return true;
+  }
+
+  // ---- skin / colour picker (shown only for multi-skin pets) ----------
+  let skinsBuiltFor = null;
+  function buildSkins() {
+    const root = $('skins');
+    root.textContent = '';
+    const sk = Sprites && Sprites.skins(state.animal);
+    if (!sk) { root.hidden = true; return; }
+    root.hidden = false;
+    for (const s of sk) {
+      const b = document.createElement('button');
+      b.className = 'skin'; b.dataset.skin = s.id; b.title = s.label;
+      const sw = document.createElement('span'); sw.className = 'sw';
+      sw.style.background = `rgb(${s.glow[0]},${s.glow[1]},${s.glow[2]})`;
+      const lbl = document.createElement('span'); lbl.className = 'lbl'; lbl.textContent = s.label;
+      b.append(sw, lbl);
+      b.addEventListener('click', () => mutate({ skin: s.id }));
+      root.appendChild(b);
+    }
+  }
+  function updateSkins() {
+    if (skinsBuiltFor !== state.animal) { buildSkins(); skinsBuiltFor = state.animal; }
+    document.querySelectorAll('.skin').forEach((b) => b.classList.toggle('sel', b.dataset.skin === state.skin));
   }
 
   // ---- render UI from state ------------------------------------------
@@ -110,6 +137,12 @@
     $('xp-text').textContent = prog.maxed ? 'MAX — Mythic!' : `${prog.into} / ${prog.span} XP`;
     $('treats').textContent = `🍪 ${state.treats || 0} treats`;
     document.querySelectorAll('.pick').forEach((b) => b.classList.toggle('sel', b.dataset.animal === state.animal));
+    updateSkins();
+    // keep the chooser tile of a multi-skin pet in sync with its chosen colour
+    if (Sprites && Sprites.skins(state.animal)) {
+      const tile = document.querySelector(`.pick[data-animal="${state.animal}"] canvas`);
+      if (tile) paintSpriteThumb(tile, state.animal);
+    }
     setSeg('size', state.size);
     setSeg('speed', state.speed);
     const vis = state.visible !== false;
@@ -161,7 +194,7 @@
 
     $('reset').addEventListener('click', async () => {
       if (!confirm('Start over with a fresh pet? Your level and treats will be lost.')) return;
-      const fresh = Object.assign({}, Store.DEFAULTS, { born: Date.now(), onboarded: true, animal: state.animal });
+      const fresh = Object.assign({}, Store.DEFAULTS, { born: Date.now(), onboarded: true, animal: state.animal, skin: state.skin });
       await Store.set(fresh);
       state = fresh; syncUI(); preview && preview.apply(state);
     });

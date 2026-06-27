@@ -81,6 +81,25 @@ body {
 .pick.sel { background: var(--pink-soft); }
 .pick.sel span { color: var(--pink); }
 
+/* skin / colour picker (multi-skin pets only) */
+.skins { display: flex; flex-wrap: wrap; gap: 7px; margin: -4px 0 12px; }
+.skins[hidden] { display: none; }
+.skin {
+  flex: 1 1 calc(25% - 6px); min-width: 0;
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  padding: 5px 0; cursor: pointer;
+  background: #fff; border: 2px solid var(--line); border-radius: 10px;
+  box-shadow: 2px 2px 0 var(--shadow); transition: transform .08s ease, background .15s;
+}
+.skin .sw {
+  width: 18px; height: 18px; border-radius: 50%;
+  border: 2px solid var(--line);
+}
+.skin .lbl { font-size: 10px; font-weight: 600; color: var(--ink-soft); }
+.skin:hover { transform: translateY(-1px); }
+.skin.sel { background: var(--pink-soft); }
+.skin.sel .lbl { color: var(--pink); }
+
 /* actions */
 .actions { display: flex; gap: 7px; margin-bottom: 11px; }
 .btn {

@@ -63,6 +63,7 @@
       const newAnimal = state.animal || 'cat';
       if (newAnimal !== this.animal) this.boxing = false; // switching pet cancels the box
       this.animal = newAnimal;
+      this.skin = state.skin || 'doux';   // colour variant, only used by multi-skin sprite pets
       this.name = state.name || 'Pixel';
       this.xp = state.xp || 0;
       this.size = state.size || 'medium';
@@ -112,6 +113,26 @@
       this.idleTimer = 0.8;
     }
     beHappy(dur) { this.mood = 'happy'; this.moodTimer = dur; this.sleepiness = 0; if (this.state === 'sleep') this.wake(); }
+
+    // does the current pet have an animation for `name` (sprite clip or sheet)?
+    hasAnim(name) {
+      const S = global.PetSprites; const d = S && S.petDef(this.animal);
+      return !!(d && ((d.clips && d.clips[name]) || (d.anims && d.anims[name])));
+    }
+    // double-click reaction: a quick flinch for pets that have a 'hurt' clip
+    // (the Dino); anything else just gets petted so the gesture still feels alive.
+    hurt() {
+      if (this.boxing) return 'box';
+      if (!this.hasAnim('hurt')) return this.pat();
+      if (this.mood === 'sleep') this.wake();
+      this.state = 'hurt';
+      this.mood = 'idle';
+      this.stepping = false;
+      this.idleTimer = 0.5;          // ~one play-through of the 4-frame clip
+      this.hop(70);                  // small recoil
+      this.spawn('!', 1);
+      return 'hurt';
+    }
 
     // press-and-hold: hop into the box and play that animation in full
     canBox() {
@@ -289,16 +310,19 @@
       // resolve body colours (procedural draws its buffer here too)
       let colors, drawBody;
       if (spriteDef) {
-        colors = { glow: spriteDef.glow, ink: spriteDef.ink };
+        const glow = spriteDef.skins ? Sprites.glowFor(this.animal, this.skin) : spriteDef.glow;
+        colors = { glow, ink: spriteDef.ink };
         let fr;
         if (this.boxing) {
-          fr = { sheet: Sprites.getSheet(this.boxAnim), index: this.boxFrame };
+          const bm = Sprites.sheetMeta(this.boxAnim);
+          fr = { sheet: Sprites.getSheet(this.boxAnim), index: this.boxFrame, frame: (bm && bm.frame) || Sprites.FRAME };
         } else {
           const eff = this.held ? 'held' : (this.mood === 'sleep' ? 'sleep' : this.state);
-          fr = Sprites.frameFor(spriteDef, eff, now / 1000);
+          fr = Sprites.frameFor(spriteDef, eff, now / 1000, this.skin);
         }
-        const size = Math.min(BUF_H * px - 6, Sprites.FRAME * px * SPRITE_ZOOM * growth.scale);
-        drawBody = () => Sprites.drawInto(ctx, fr.sheet, fr.index, size, spriteDef.footInset);
+        const zoom = spriteDef.zoom || SPRITE_ZOOM;
+        const size = Math.min(BUF_H * px - 6, fr.frame * px * zoom * growth.scale);
+        drawBody = () => Sprites.drawInto(ctx, fr.sheet, fr.index, size, spriteDef.footInset, fr.frame);
         this._bodyTop = feetY - size * 0.82;
       } else {
         const buf = this.buf;
