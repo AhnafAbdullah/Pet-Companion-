@@ -18,7 +18,7 @@ function encodePNG(w, h, rgba) {
 }
 
 const BW = 56, BH = 52, SCALE = 6;
-const animals = ['cat', 'dog', 'owl'];
+const animals = ['cat', 'owl'];
 const levels = [1, 4, 8, 12];
 const cellW = BW * SCALE, cellH = BH * SCALE;
 const W = cellW * levels.length, H = cellH * animals.length;

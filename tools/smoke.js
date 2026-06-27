@@ -32,7 +32,7 @@ const xpForLevel = (l) => Math.round(16 * Math.pow(l - 1, 1.65));
 const finite = (...vs) => vs.every((v) => Number.isFinite(v));
 
 let frames = 0, checks = 0;
-for (const animal of ['cat', 'dog', 'owl', 'kitten', 'vampire']) {
+for (const animal of ['cat', 'owl', 'kitten', 'vampire']) {
   for (const startLevel of [1, 5, 12]) {
     const pet = new Pet({ animal, xp: xpForLevel(startLevel), size: 'medium', speed: 'normal' });
     const ctx = makeCtx();

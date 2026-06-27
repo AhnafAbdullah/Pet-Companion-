@@ -1,5 +1,5 @@
 /*
- * critters.js — procedural pixel-art for the cat, dog and owl.
+ * critters.js — procedural pixel-art for the cat and owl.
  *
  * Each animal is drawn from raster primitives into a PixelBuffer. Growth is a
  * single 0..1 parameter derived from level: it re-proportions the animal
@@ -37,16 +37,10 @@
   // ---- per-animal signature palettes ----------------------------------
   const THEMES = {
     cat: {
-      name: 'Cat',
+      name: 'Inka',
       baby:  { coat: [255, 199, 150], belly: [255, 244, 230], ear: [248, 197, 209], nose: [232, 138, 160], ink: [120, 78, 60] },
       elder: { coat: [240, 156, 78],  belly: [255, 238, 214], ear: [244, 165, 182], nose: [220, 110, 138], ink: [74, 44, 30] },
       eye: [44, 39, 64], glow: [255, 196, 120],
-    },
-    dog: {
-      name: 'Dog',
-      baby:  { coat: [248, 214, 170], belly: [255, 248, 236], ear: [224, 176, 130], nose: [90, 70, 64], ink: [110, 76, 52] },
-      elder: { coat: [228, 158, 86],  belly: [255, 246, 228], ear: [196, 130, 80],  nose: [54, 42, 40], ink: [70, 44, 28] },
-      eye: [44, 39, 64], glow: [255, 206, 130], tongue: [255, 138, 158],
     },
     owl: {
       name: 'Owl',
@@ -56,7 +50,7 @@
     },
   };
 
-  const ANIMALS = ['cat', 'dog', 'owl'];
+  const ANIMALS = ['cat', 'owl'];
 
   function theme(animal, t) {
     const T = THEMES[animal] || THEMES.cat; // unknown animal (e.g. a sprite pet) -> cat fallback
@@ -194,65 +188,6 @@
   }
 
   // =====================================================================
-  //  DOG
-  // =====================================================================
-  function drawDog(buf, g, p, o) {
-    const s = g.scale, f = o.facing, cx = o.cx, gy = o.groundY;
-    const legLen = Math.round(5.5 * s);
-    const bodyRx = Math.round(12 * s), bodyRy = Math.round(7.5 * s);
-    const bx = cx - f * 1, by = gy - legLen - bodyRy;
-    const footY = gy;
-    drawLeg(buf, bx - f * bodyRx * 0.6 + f, by + bodyRy, footY, o.walk + 0.5, o.stepping, p.coatLo, p.ink, true);
-    drawLeg(buf, bx + f * bodyRx * 0.5 + f, by + bodyRy, footY, o.walk + 0.5, o.stepping, p.coatLo, p.ink, true);
-    drawLeg(buf, bx - f * bodyRx * 0.6, by + bodyRy, footY, o.walk, o.stepping, p.coat, p.ink, false);
-    drawLeg(buf, bx + f * bodyRx * 0.5, by + bodyRy, footY, o.walk, o.stepping, p.coat, p.ink, false);
-    // wagging tail
-    const wagSpeed = o.mood === 'happy' ? 9 : 3.5;
-    const tailBaseX = bx - f * (bodyRx - 1), tailBaseY = by - bodyRy * 0.4;
-    const wag = Math.sin(o.t * wagSpeed) * 4;
-    for (let i = 0; i < Math.round(6 * s); i++) {
-      const k = i / (6 * s);
-      buf.disc(Math.round(tailBaseX - f * i), Math.round(tailBaseY - i * 1.4 + wag * k), Math.max(1, Math.round(2.4 * s - k)), p.coat);
-    }
-    buf.fillEllipse(bx, by, bodyRx, bodyRy, p.coat);
-    buf.fillEllipse(bx + f * 3, by + bodyRy * 0.35, bodyRx * 0.6, bodyRy * 0.62, p.belly);
-    buf.fillEllipse(bx - f * bodyRx * 0.4, by - bodyRy * 0.5, bodyRx * 0.5, bodyRy * 0.4, p.coatHi);
-    const headR = Math.round(7 * s * g.headRatio);
-    const hx = bx + f * (bodyRx * 0.66), hy = by - bodyRy * 0.5 - headR * 0.45;
-    // big floppy ears first, so the head sits on top of where they attach
-    const earSway = Math.sin(o.t * 3) * 1.4;
-    const eL = Math.round(10 * s * g.earLen);
-    floppyEar(buf, hx - f * headR * 0.85, hy - headR * 0.5, eL, p.ear, earSway);        // back ear
-    floppyEar(buf, hx + f * headR * 0.78, hy - headR * 0.35, eL * 0.92, p.ear, earSway * 0.6); // front ear by the cheek
-    buf.disc(hx, hy, headR, p.coat);
-    // muzzle bump + nose
-    const snX = hx + f * headR * 0.72, snY = hy + headR * 0.42;
-    buf.fillEllipse(snX, snY, headR * 0.56, headR * 0.46, p.belly);
-    buf.fillEllipse(hx - f * headR * 0.3, hy - headR * 0.38, headR * 0.42, headR * 0.32, p.coatHi);
-    buf.outline(p.ink, false);
-    const er = Math.max(1, Math.round(headR * 0.17 * g.eyeRatio));
-    const eyeY = Math.round(hy - headR * 0.04);
-    const ex1 = Math.round(hx - f * headR * 0.28), ex2 = Math.round(hx + f * headR * 0.55);
-    drawEye(buf, ex1, eyeY, er, p, o.blink);
-    drawEye(buf, ex2, eyeY, er, p, o.blink);
-    buf.disc(Math.round(snX + f * headR * 0.45), Math.round(snY - 1), Math.max(1, Math.round(headR * 0.26)), p.nose);
-    if (o.mood === 'happy') {
-      buf.fillEllipse(snX + f * headR * 0.2, snY + headR * 0.5, 2, 3, p.tongue);
-      buf.disc(Math.round(hx - f * headR * 0.6), eyeY + er + 2, 1, p.tongue);
-    }
-    return { footY, cx: hx, headY: hy, headR };
-  }
-
-  function floppyEar(buf, x, y, len, col, sway) {
-    // teardrop: widens in the middle, tapers at the rounded tip
-    for (let i = 0; i < len; i++) {
-      const k = i / len;
-      const w = Math.max(1, Math.round(3.4 - Math.abs(k - 0.4) * 4.2));
-      buf.fillEllipse(Math.round(x + sway * k), Math.round(y + i), w, 1, col);
-    }
-  }
-
-  // =====================================================================
   //  OWL
   // =====================================================================
   function drawOwl(buf, g, p, o) {
@@ -324,8 +259,7 @@
     const c = theme(animal, g.t);
     const p = resolve(buf, c);
     let meta;
-    if (animal === 'dog') meta = drawDog(buf, g, p, o);
-    else if (animal === 'owl') meta = drawOwl(buf, g, p, o);
+    if (animal === 'owl') meta = drawOwl(buf, g, p, o);
     else meta = drawCat(buf, g, p, o);
     if (g.crown) drawCrown(buf, meta);
     meta.growth = g;

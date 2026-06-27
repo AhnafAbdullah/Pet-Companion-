@@ -12,7 +12,7 @@
   const Raster = window.PetRaster;
   const Sprites = window.PetSprites;
 
-  const LABELS = { cat: 'Cat', dog: 'Dog', owl: 'Owl', kitten: 'Kitten', vampire: 'Vampire' };
+  const LABELS = { cat: 'Inka', owl: 'Owl', kitten: 'Biscuit', vampire: 'Vampire Biscuit' };
   const ALL_ANIMALS = [...Critters.ANIMALS, ...(Sprites ? Sprites.list() : [])];
   const pendingThumbs = [];   // sprite thumbs waiting for their image to load
 

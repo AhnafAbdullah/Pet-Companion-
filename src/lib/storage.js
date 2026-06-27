@@ -10,7 +10,7 @@
   const MAX_LEVEL = 12;
 
   const DEFAULTS = {
-    animal: 'cat',        // 'cat' | 'dog' | 'owl'
+    animal: 'cat',        // 'cat' | 'owl' | 'kitten' | 'vampire'
     name: 'Pixel',
     xp: 0,
     visible: true,

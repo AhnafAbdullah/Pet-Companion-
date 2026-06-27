@@ -1,6 +1,6 @@
 # 🐾 Pet Companion
 
-A tiny pixel-art pet — **cat**, **dog**, or **owl** — that lives at the bottom of
+A tiny pixel-art pet — **Inka** (cat) or **owl** — that lives at the bottom of
 your browser, walks across the page, reacts when you click, lets you carry it
 around, and **grows** the more you play with it.
 
@@ -13,15 +13,15 @@ larger, richer-coloured elder with a glowing aura — and a crown at the top.
 
 ## Features
 
-- **Five companions** — three drawn procedurally (cat, dog, owl) plus two
-  pixel-sprite cats (**Kitten** and **Vampire**) animated from real sprite
-  sheets. Each has its own quirks (cat tail curl, dog ear-flop + tail wag, owl
-  wing-tuck; the Kitten tail-swishes and curls up in a **box** when it sleeps).
+- **Four companions** — two drawn procedurally (**Inka** the cat, owl) plus two
+  pixel-sprite cats (**Biscuit** and **Vampire Biscuit**) animated from real
+  sprite sheets. Each has its own quirks (Inka's tail curl, owl wing-tuck;
+  Biscuit tail-swishes and curls up in a **box** when it sleeps).
 - **Lives on the page** — strolls along the bottom, pauses to sit, looks around,
   gets sleepy, blinks, and dozes off with little `z`'s.
 - **Reacts to you** — click anywhere and it perks up and hops toward the click;
   click the pet to **pet** it (hearts!), or **drag** it anywhere on screen.
-  **Press and hold** the Kitten and it hops into a box, playing that animation
+  **Press and hold** Biscuit and it hops into a box, playing that animation
   through all its frames and curling up until you let go.
 - **Grows up** — earn XP by petting, feeding treats, and just browsing. Twelve
   levels from *Baby* → *Young* → *Adult* → *Elder* → *Mythic*, each visibly
@@ -61,8 +61,8 @@ and syncs instantly when you change something in the popup.
 ```
 manifest.json              MV3 manifest
 src/lib/raster.js          indexed-palette pixel buffer + drawing primitives
-src/lib/critters.js        procedural cat / dog / owl art + growth model
-src/lib/spritecat.js       sprite-sheet companions (Kitten / Vampire) + loader
+src/lib/critters.js        procedural cat (Inka) / owl art + growth model
+src/lib/spritecat.js       sprite-sheet companions (Biscuit / Vampire Biscuit) + loader
 src/lib/storage.js         saved state + XP↔level curve (shared everywhere)
 src/lib/pet.js             behaviour state-machine, physics, particles, renderer
 src/assets/cat/            sprite sheets (Idle / drculacat / Box3, 32x32 strips)
@@ -89,8 +89,8 @@ the preview is a faithful render of what walks your pages.
 
 ## Credits
 
-The Kitten and Vampire companions use sprites from the **CatPackFree** asset
-pack (`src/assets/cat/`). The cat / dog / owl are original procedural art.
+The Biscuit and Vampire Biscuit companions use sprites from the **CatPackFree**
+asset pack (`src/assets/cat/`). Inka (cat) and the owl are original procedural art.
 
 ## Roadmap ideas
 

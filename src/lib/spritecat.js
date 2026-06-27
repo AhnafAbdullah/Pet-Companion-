@@ -1,6 +1,6 @@
 /*
  * spritecat.js — image-sprite companions, sourced from the CatPackFree art
- * (32x32 horizontal strips). These live alongside the procedural cat/dog/owl;
+ * (32x32 horizontal strips). These live alongside the procedural cat/owl;
  * the engine's behaviour/physics/XP are animal-agnostic, so sprite pets reuse
  * all of it and only differ in how the body frame is drawn.
  *
@@ -23,14 +23,14 @@
   // companions defined purely by sprites. `anims` maps a pet state to a sheet.
   const PETS = {
     kitten: {
-      label: 'Kitten',
+      label: 'Biscuit',
       glow: [255, 205, 150], ink: [120, 80, 60],
       footInset: 4,            // empty rows below the paws in the frame, so it seats on the ground
       holdAnim: 'box',         // press-and-hold plays this once, all frames, to completion
       anims: { idle: 'idle', walk: 'idle', sit: 'idle', cheer: 'idle', sleep: 'box', held: 'idle', box: 'box' },
     },
     vampire: {
-      label: 'Vampire',
+      label: 'Vampire Biscuit',
       glow: [196, 90, 120], ink: [60, 30, 45],
       footInset: 4,
       anims: { idle: 'cape', walk: 'cape', sit: 'cape', cheer: 'cape', sleep: 'cape', held: 'cape' },
