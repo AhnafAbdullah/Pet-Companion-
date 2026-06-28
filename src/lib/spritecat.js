@@ -44,6 +44,7 @@
       label: 'Biscuit',
       glow: [255, 205, 150], ink: [120, 80, 60],
       footInset: 4,            // empty rows below the paws in the frame, so it seats on the ground
+      flipX: true,             // art's tail sits on the right; invert so the tail trails the walk direction
       hold: { state: 'box', mode: 'once' }, // press-and-hold plays 'box' once, all frames, to completion
       anims: { idle: 'idle', walk: 'idle', sit: 'idle', cheer: 'idle', sleep: 'box', held: 'idle', box: 'box' },
     },
@@ -51,6 +52,7 @@
       label: 'Vampire Biscuit',
       glow: [196, 90, 120], ink: [60, 30, 45],
       footInset: 4,
+      flipX: true,             // tail trails the walk direction (see kitten)
       anims: { idle: 'cape', walk: 'cape', sit: 'cape', cheer: 'cape', sleep: 'cape', held: 'cape' },
     },
     dino: {
@@ -80,7 +82,7 @@
       },
     },
     fox: {
-      label: 'Foxi',
+      label: 'Amber',
       glow: [255, 168, 96], ink: [90, 52, 34],
       sheet: 'fox',            // single grid sheet (no skins)
       frame: 32,

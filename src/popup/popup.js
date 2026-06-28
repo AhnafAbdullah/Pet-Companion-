@@ -12,7 +12,7 @@
   const Raster = window.PetRaster;
   const Sprites = window.PetSprites;
 
-  const LABELS = { cat: 'Inka', owl: 'Owl', kitten: 'Biscuit', vampire: 'Vampire Biscuit', dino: 'Dino', fox: 'Foxi' };
+  const LABELS = { cat: 'Inka', owl: 'Owly', kitten: 'Biscuit', vampire: 'Vampire Biscuit', dino: 'Dino', fox: 'Amber' };
   const ALL_ANIMALS = [...Critters.ANIMALS, ...(Sprites ? Sprites.list() : [])];
   const pendingThumbs = [];   // sprite thumbs waiting for their image to load
 
@@ -32,7 +32,13 @@
     pctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     pctx.imageSmoothingEnabled = false;
     c.addEventListener('click', () => { preview && preview.pat(); });
-    c.addEventListener('dblclick', () => { preview && preview.hurt(); });
+    c.addEventListener('dblclick', async () => {
+      if (!preview) return;
+      if (preview.hurt() === 'hurt') {           // a real flinch (Dino/Amber) costs 6 XP
+        const s = await Store.get();
+        await mutate({ xp: Math.max(0, (s.xp || 0) - 6) });
+      }
+    });
     requestAnimationFrame(loop);
   }
   function loop(t) {

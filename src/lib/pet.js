@@ -303,14 +303,18 @@
       const lift = this.y;                 // hop / drag height
       const feetY = baseY - bob - lift;
 
-      // squash & stretch
-      const stretch = clamp(this.vy * 0.0009, -0.18, 0.22);
-      const sx = (1 + this.squash * 0.85 - stretch) * this.facing;
-      const sy = 1 - this.squash * 0.85 + stretch + breathe * 0.004;
       const cx = w / 2;
       const growth = Critters.growth(this.level);
       const Sprites = global.PetSprites;
       const spriteDef = Sprites && Sprites.isSpritePet(this.animal) ? Sprites.petDef(this.animal) : null;
+
+      // squash & stretch. `flipX` sprites (Biscuit / Vampire Biscuit) have their
+      // art mirrored relative to the right-facing convention, so invert the flip
+      // to keep them facing — tail trailing — the direction they walk.
+      const artFlip = spriteDef && spriteDef.flipX ? -1 : 1;
+      const stretch = clamp(this.vy * 0.0009, -0.18, 0.22);
+      const sx = (1 + this.squash * 0.85 - stretch) * this.facing * artFlip;
+      const sy = 1 - this.squash * 0.85 + stretch + breathe * 0.004;
 
       ctx.clearRect(0, 0, w, h);
 

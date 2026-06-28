@@ -84,7 +84,7 @@
       const now = performance.now();
       if (tapTimer && now - lastTapAt < DBL_MS) {  // second tap -> double-click
         clearTimeout(tapTimer); tapTimer = null; lastTapAt = 0;
-        pet.hurt();
+        if (pet.hurt() === 'hurt') addXp(-6);       // a real flinch (Dino/Amber) costs 6 XP
         return;
       }
       lastTapAt = now;
@@ -148,7 +148,7 @@
   let patCooldown = 0;
   function addXp(amount, cooldownMs) {
     if (cooldownMs) { const now = Date.now(); if (now < patCooldown) return; patCooldown = now + cooldownMs; }
-    pet.xp += amount;            // instant local feedback
+    pet.xp = Math.max(0, pet.xp + amount);   // instant local feedback (never below zero)
     pendingXp += amount;
     if (!xpFlushAt) xpFlushAt = performance.now() + 400;
   }
@@ -156,7 +156,7 @@
     if (!pendingXp) return;
     const add = pendingXp; pendingXp = 0; xpFlushAt = 0;
     const s = await Store.get();
-    s.xp = (s.xp || 0) + add;
+    s.xp = Math.max(0, (s.xp || 0) + add);
     await Store.set(s);
   }
   function queueSavePos(now) {
@@ -189,13 +189,26 @@
     bubble.addEventListener('click', dismissBubble);
     if (!sticky) setTimeout(dismissBubble, 9000);
   }
-  function onboardingMessage(name) {
+  // Assemble a fragment from parts: plain strings stay text; {b:'x'} → bold.
+  function buildFrag(parts) {
     const frag = document.createDocumentFragment();
-    const bName = document.createElement('b'); bName.textContent = name;
-    const bDrag = document.createElement('b'); bDrag.textContent = 'drag';
-    frag.append("Hi! I'm ", bName, ' 🐾 Click me to pet, ', bDrag,
-      ' to carry me around, and feed me from the toolbar icon to help me grow!');
+    for (const p of parts) {
+      if (typeof p === 'string') frag.append(p);
+      else { const b = document.createElement('b'); b.textContent = p.b; frag.append(b); }
+    }
     return frag;
+  }
+  // A short, character-specific tutorial: shared gestures plus the moves that are
+  // unique to the chosen companion (Biscuit naps, Dino flinches, Amber both).
+  const TIP_EMOJI = { kitten: '🐾', cat: '🐾', owl: '🦉', vampire: '🦇', dino: '🦖', fox: '🦊' };
+  function characterTip(animal, name) {
+    const parts = ["Hi! I'm ", { b: name }, ` ${TIP_EMOJI[animal] || '🐾'} — click me to pet, `,
+      { b: 'drag' }, ' to carry me around'];
+    if (animal === 'kitten') parts.push(', and ', { b: 'press & hold' }, ' me for a cozy nap');
+    else if (animal === 'dino') parts.push(', and ', { b: 'double-click' }, ' to give me a fright');
+    else if (animal === 'fox') parts.push(', ', { b: 'press & hold' }, ' for a nap, and ', { b: 'double-click' }, ' to spook me');
+    parts.push('. Feed me from the toolbar to help me grow!');
+    return buildFrag(parts);
   }
   function followBubble() {
     if (!bubble || !pet) return;
@@ -227,7 +240,7 @@
     const sizeChanged = next.size !== pet.size;
     const wasVisible = !canvas.classList.contains('petc-hidden');
     pet.apply(next);
-    if (animalChanged) { pet.celebrate(); }     // little poof when you switch friend
+    if (animalChanged) { pet.celebrate(); showBubble(characterTip(next.animal, next.name), false); } // poof + how-to for the new friend
     if (sizeChanged) { resize(); place(); }
     const show = next.visible !== false;
     canvas.classList.toggle('petc-hidden', !show);
@@ -244,7 +257,7 @@
     place();
     if (state.visible === false) { canvas.classList.add('petc-hidden'); hit.classList.add('petc-hidden'); }
     if (!state.onboarded) {
-      setTimeout(() => showBubble(onboardingMessage(state.name), false), 1200);
+      setTimeout(() => showBubble(characterTip(state.animal, state.name), false), 1200);
     }
     requestAnimationFrame((t) => { last = t; loop(t); });
   }

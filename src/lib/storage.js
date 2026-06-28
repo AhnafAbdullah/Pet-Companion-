@@ -10,7 +10,8 @@
   const MAX_LEVEL = 12;
 
   const DEFAULTS = {
-    animal: 'cat',        // 'cat' | 'owl' | 'kitten' | 'vampire' | 'dino' | 'fox'
+    animal: 'kitten',     // 'cat' | 'owl' | 'kitten' | 'vampire' | 'dino' | 'fox' — Biscuit is the default
+
     skin: 'doux',         // colour variant for multi-skin pets (the Dino)
     name: 'Pixel',
     xp: 0,
