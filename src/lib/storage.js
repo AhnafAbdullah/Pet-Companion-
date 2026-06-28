@@ -22,6 +22,7 @@
     lastPat: 0,
     born: 0,
     treats: 0,
+    sound: true,          // play the pet's voice when you pat it
     onboarded: false,
   };
 
@@ -44,17 +45,37 @@
     return { level, into, span, frac: Math.max(0, Math.min(1, into / span)), maxed: false };
   }
 
+  // True while this context can still reach the extension APIs. After a dev
+  // reload, an orphaned content script's chrome.runtime.id goes undefined and
+  // any chrome.* call throws "Extension context invalidated" — we guard on this.
+  function alive() {
+    try { return !!(chrome && chrome.runtime && chrome.runtime.id); } catch (_) { return false; }
+  }
+  // Swallow a benign post-reload error; surface anything unexpected.
+  function lastErr() {
+    try { return chrome.runtime && chrome.runtime.lastError; } catch (_) { return null; }
+  }
+
   function get() {
     return new Promise((resolve) => {
-      chrome.storage.local.get(KEY, (res) => {
-        const s = Object.assign({}, DEFAULTS, res && res[KEY]);
-        if (!s.born) s.born = Date.now();
-        resolve(s);
-      });
+      const fallback = () => { const s = Object.assign({}, DEFAULTS); s.born = Date.now(); resolve(s); };
+      if (!alive()) return fallback();
+      try {
+        chrome.storage.local.get(KEY, (res) => {
+          if (lastErr()) return fallback();
+          const s = Object.assign({}, DEFAULTS, res && res[KEY]);
+          if (!s.born) s.born = Date.now();
+          resolve(s);
+        });
+      } catch (_) { fallback(); }
     });
   }
   function set(state) {
-    return new Promise((resolve) => chrome.storage.local.set({ [KEY]: state }, resolve));
+    return new Promise((resolve) => {
+      if (!alive()) return resolve();
+      try { chrome.storage.local.set({ [KEY]: state }, () => { void lastErr(); resolve(); }); }
+      catch (_) { resolve(); }
+    });
   }
   async function patch(partial) {
     const cur = await get();
@@ -66,8 +87,9 @@
     const handler = (changes, area) => {
       if (area === 'local' && changes[KEY]) cb(changes[KEY].newValue, changes[KEY].oldValue);
     };
-    chrome.storage.onChanged.addListener(handler);
-    return () => chrome.storage.onChanged.removeListener(handler);
+    if (!alive()) return () => {};
+    try { chrome.storage.onChanged.addListener(handler); } catch (_) { return () => {}; }
+    return () => { try { chrome.storage.onChanged.removeListener(handler); } catch (_) {} };
   }
 
   const Store = { KEY, DEFAULTS, MAX_LEVEL, xpToReach, levelForXp, xpProgress, get, set, patch, subscribe };

@@ -29,6 +29,7 @@
         "src/lib/critters.js",
         "src/lib/spritecat.js",
         "src/lib/storage.js",
+        "src/lib/petsfx.js",
         "src/lib/pet.js",
         "src/content/content.js"
       ],
@@ -39,7 +40,7 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["src/assets/cat/*.png", "src/assets/dino/*.png", "src/assets/fox/*.png"],
+      "resources": ["src/assets/cat/*.png", "src/assets/dino/*.png", "src/assets/fox/*.png", "src/assets/sfx/*"],
       "matches": ["<all_urls>"]
     }
   ]

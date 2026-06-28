@@ -165,8 +165,13 @@
   }
 
   // ---- loop -----------------------------------------------------------
+  // After a dev reload this content script is orphaned; chrome.runtime.id goes
+  // undefined. Detect that and remove our DOM so we don't animate (or throw) forever.
+  function extAlive() { try { return !!(chrome.runtime && chrome.runtime.id); } catch (_) { return false; } }
+
   function loop(t) {
     if (!running) return;
+    if (!extAlive()) { running = false; canvas && canvas.remove(); hit && hit.remove(); bubble && bubble.remove(); return; }
     const dt = (t - last) / 1000; last = t;
     pet.update(dt, window.innerWidth);
     pet.render(ctx, cw, ch, t);
@@ -251,6 +256,7 @@
   // ---- boot -----------------------------------------------------------
   async function boot() {
     if (window.PetSprites) window.PetSprites.start((p) => chrome.runtime.getURL(p));
+    if (window.PetSfx) window.PetSfx.setResolver((p) => chrome.runtime.getURL(p));
     const state = await Store.get();
     pet = new Engine.Pet(state);
     build();

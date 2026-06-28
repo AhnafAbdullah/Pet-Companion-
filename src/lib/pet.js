@@ -74,6 +74,7 @@
       this.speedMode = state.speed || 'normal';
       this.level = Critters.growth ? levelFromXp(this.xp) : 1;
       this.px = PX_BY_SIZE[this.size] || PX_BY_SIZE.medium;
+      if (global.PetSfx) global.PetSfx.setMuted(state.sound === false);
     }
 
     get growth() { return Critters.growth(this.level); }
@@ -107,6 +108,7 @@
       this.beHappy(2.2);
       this.hop(150);
       this.spawnHearts(4);
+      if (global.PetSfx) global.PetSfx.play(this.animal);   // the pet's voice
       return 'pat';
     }
     feed() {

@@ -155,6 +155,7 @@
     const vb = $('visible');
     vb.setAttribute('aria-pressed', String(vis));
     vb.textContent = vis ? '👁 Showing' : '🚫 Hidden';
+    setSeg('sound', state.sound !== false ? 'on' : 'off');
   }
   function setSeg(id, val) {
     $(id).querySelectorAll('button').forEach((b) => b.classList.toggle('on', b.dataset.v === val));
@@ -189,6 +190,7 @@
       sendToActiveTab({ type: 'come' });
     });
     $('visible').addEventListener('click', () => mutate({ visible: !(state.visible !== false) }));
+    $('sound').querySelectorAll('button').forEach((b) => b.addEventListener('click', () => mutate({ sound: b.dataset.v === 'on' })));
 
     const nameEl = $('name');
     $('edit').addEventListener('click', () => { nameEl.focus(); nameEl.select(); });
@@ -212,6 +214,7 @@
   // ---- boot -----------------------------------------------------------
   (async function () {
     if (Sprites) Sprites.start((p) => chrome.runtime.getURL(p));
+    if (window.PetSfx) window.PetSfx.setResolver((p) => chrome.runtime.getURL(p));
     state = await Store.get();
     preview = new Engine.Pet(state);
     initPreview();
