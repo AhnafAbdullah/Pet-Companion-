@@ -23,6 +23,7 @@
     born: 0,
     treats: 0,
     sound: true,          // play the pet's voice when you pat it
+    movement: true,       // false = pet stays put (drag to reposition); no wandering
     onboarded: false,
   };
 

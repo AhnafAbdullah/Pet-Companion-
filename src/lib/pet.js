@@ -75,6 +75,11 @@
       this.level = Critters.growth ? levelFromXp(this.xp) : 1;
       this.px = PX_BY_SIZE[this.size] || PX_BY_SIZE.medium;
       if (global.PetSfx) global.PetSfx.setMuted(state.sound === false);
+      this.canMove = state.movement !== false;
+      // if movement was just turned off mid-stroll, settle in place
+      if (!this.canMove && this.state === 'walk') {
+        this.state = 'idle'; this.targetFrac = this.frac; this.stepping = false; this.idleTimer = rand(1, 3);
+      }
     }
 
     get growth() { return Critters.growth(this.level); }
@@ -84,7 +89,7 @@
       if (this.mood === 'sleep') { this.wake(); return; }
       const r = Math.random();
       if (this.sleepiness > 1 && r < 0.18) { this.sleep(); return; }
-      if (r < 0.55) {                       // wander
+      if (this.canMove && r < 0.55) {       // wander (only when movement is on)
         this.state = 'walk';
         this.targetFrac = clamp(this.frac + rand(-0.4, 0.4), 0.04, 0.96);
         this.idleTimer = 99;
@@ -175,7 +180,7 @@
       this.facing = frac >= this.frac ? 1 : -1;
       this.hop(110);
       this.spawnSparkle(2);
-      if (Math.abs(frac - this.frac) > 0.06 && Math.random() < 0.6) {
+      if (this.canMove && Math.abs(frac - this.frac) > 0.06 && Math.random() < 0.6) {
         this.state = 'walk';
         this.targetFrac = clamp(frac, 0.04, 0.96);
       }

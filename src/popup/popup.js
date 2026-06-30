@@ -155,6 +155,7 @@
     const vb = $('visible');
     vb.setAttribute('aria-pressed', String(vis));
     vb.textContent = vis ? '👁 Showing' : '🚫 Hidden';
+    setSeg('movement', state.movement !== false ? 'on' : 'off');
     setSeg('sound', state.sound !== false ? 'on' : 'off');
   }
   function setSeg(id, val) {
@@ -190,6 +191,7 @@
       sendToActiveTab({ type: 'come' });
     });
     $('visible').addEventListener('click', () => mutate({ visible: !(state.visible !== false) }));
+    $('movement').querySelectorAll('button').forEach((b) => b.addEventListener('click', () => mutate({ movement: b.dataset.v === 'on' })));
     $('sound').querySelectorAll('button').forEach((b) => b.addEventListener('click', () => mutate({ sound: b.dataset.v === 'on' })));
 
     const nameEl = $('name');
