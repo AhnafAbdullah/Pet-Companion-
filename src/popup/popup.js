@@ -12,7 +12,10 @@
   const Raster = window.PetRaster;
   const Sprites = window.PetSprites;
 
-  const LABELS = { cat: 'Inka', owl: 'Owly', kitten: 'Biscuit', vampire: 'Vampire Biscuit', dino: 'Dino', fox: 'Amber' };
+  // Display names for the procedural pets; sprite pets supply their own `label`
+  // in spritecat.js, so a new sprite companion needs no change here.
+  const LABELS = { cat: 'Inka', owl: 'Owly' };
+  const labelFor = (a) => LABELS[a] || (Sprites && Sprites.petDef(a) && Sprites.petDef(a).label) || a;
   const ALL_ANIMALS = [...Critters.ANIMALS, ...(Sprites ? Sprites.list() : [])];
   const pendingThumbs = [];   // sprite thumbs waiting for their image to load
 
@@ -66,7 +69,7 @@
       const b = document.createElement('button');
       b.className = 'pick'; b.dataset.animal = animal;
       const cv = document.createElement('canvas'); cv.width = 48; cv.height = 48;
-      const sp = document.createElement('span'); sp.textContent = LABELS[animal] || animal;
+      const sp = document.createElement('span'); sp.textContent = labelFor(animal);
       b.append(cv, sp);
       b.addEventListener('click', () => mutate({ animal }));
       root.appendChild(b);

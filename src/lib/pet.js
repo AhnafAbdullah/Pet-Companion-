@@ -367,17 +367,22 @@
         this._bodyTop = feetY - (GROUND_Y - meta.headY + meta.headR) * px;
       }
 
-      // aura glow for evolved pets (common)
+      // Vertical centre of the visible pet (feet .. body top). Used to centre the
+      // aura and to anchor particles so both hug the body rather than floating high.
+      const bodyH = feetY - this._bodyTop;
+      const bodyCy = feetY - bodyH * 0.5;
+
+      // aura glow for evolved pets — centred on the body, tinted the pet's own colour
       if (growth.aura) {
         const g = colors.glow;
-        const cyAura = feetY - GROUND_Y * px * 0.5;
         const pulse = 0.5 + Math.sin(now / 380) * 0.18;
-        const rad = BUF_W * px * 0.5;
-        const grd = ctx.createRadialGradient(cx, cyAura, 2, cx, cyAura, rad);
-        grd.addColorStop(0, `rgba(${g[0]},${g[1]},${g[2]},${0.35 * pulse})`);
+        const rad = Math.max(bodyH * 0.78, BUF_W * px * 0.42);
+        const grd = ctx.createRadialGradient(cx, bodyCy, 2, cx, bodyCy, rad);
+        grd.addColorStop(0, `rgba(${g[0]},${g[1]},${g[2]},${0.42 * pulse})`);
+        grd.addColorStop(0.5, `rgba(${g[0]},${g[1]},${g[2]},${0.16 * pulse})`);
         grd.addColorStop(1, `rgba(${g[0]},${g[1]},${g[2]},0)`);
         ctx.fillStyle = grd;
-        ctx.fillRect(cx - rad, cyAura - rad, rad * 2, rad * 2);
+        ctx.fillRect(cx - rad, bodyCy - rad, rad * 2, rad * 2);
       }
 
       // blit body, pivoting on the feet so squash reads right
@@ -391,7 +396,7 @@
       // mythic crown overlay for sprite pets (procedural pets bake it in)
       if (spriteDef && growth.crown) drawCanvasCrown(ctx, cx, this._bodyTop, px);
 
-      this.renderParticles(ctx, cx, feetY - GROUND_Y * px * 0.5, colors);
+      this.renderParticles(ctx, cx, bodyCy, colors);
     }
 
     ensureOffscreen() {
